@@ -12,7 +12,7 @@ import (
 // Run is a function that will call the server to reserve seats.
 // It checks availability and based on it will call the reserve endpoint.
 // It logs the result of the reservation.
-func Run(ID, eventID string) {
+func Run(kind, ID, eventID string) {
 	type available struct {
 		HotelID   string `json:"hotel_id"`
 		Available int    `json:"available"`
@@ -52,8 +52,8 @@ func Run(ID, eventID string) {
 		}
 
 		url := fmt.Sprintf(
-			"http://localhost:8080/reserve?event_id=%s&hotel_id=%s&rooms=1&email=%s@client.com",
-			eventID, availability[0].HotelID, ID,
+			"http://localhost:8080/reserve/%s?event_id=%s&hotel_id=%s&rooms=1&email=%s@client.com",
+			kind, eventID, availability[0].HotelID, ID,
 		)
 
 		resp, err := http.Post(url, "application/x-www-form-urlencoded", nil)

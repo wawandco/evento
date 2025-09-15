@@ -9,7 +9,7 @@ import (
 )
 
 // Reserve rooms for an event
-func reserve(w http.ResponseWriter, r *http.Request) {
+func naive(w http.ResponseWriter, r *http.Request) {
 	// Determine the event ID and HotelID from the request
 	// Check availability in the database
 	// If available, create a reservation record

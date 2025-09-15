@@ -25,7 +25,8 @@ func Build() (*http.ServeMux, error) {
 	// Start the server
 	server := http.NewServeMux()
 	server.HandleFunc("GET /available", available)
-	server.HandleFunc("POST /reserve", reserve)
+	server.HandleFunc("POST /reserve/naive", naive)
+	server.HandleFunc("POST /reserve/safe", safe)
 
 	return server, nil
 }

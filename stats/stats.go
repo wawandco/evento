@@ -34,7 +34,7 @@ func Print() {
 	GROUP BY
 		hotel.Name, event_hotel_rooms.reserved, event_hotel_rooms.contracted
 	ORDER BY
-		reservations DESC;
+		name, reservations DESC;
 	`
 
 	type ResultingData struct {
@@ -67,7 +67,7 @@ func Print() {
 
 	fmt.Printf("\nAfter Reservations\n")
 	for _, v := range data {
-		fmt.Printf("| Hotel: %s, Contracted: %s, Reservations: %d, Rooms Reserved: %d\n", v.Contracted, v.Name, v.Reservations, v.RoomsReserved)
+		fmt.Printf("| Hotel: %s, Contracted: %s, Reservations: %d, Rooms Reserved: %d\n", v.Name, v.Contracted, v.Reservations, v.RoomsReserved)
 	}
 	fmt.Println("--------------------------------------")
 }

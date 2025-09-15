@@ -55,6 +55,7 @@ func main() {
 		wg.Go(func() {
 			fmt.Printf("client %d\n", i)
 			client.Run(
+				"safe",
 				fmt.Sprintf("client-%d", i),
 				"7f3535c6-d5cb-44f0-b89b-4b349f01e49d",
 			)
