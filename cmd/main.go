@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -14,8 +15,28 @@ import (
 )
 
 func main() {
+	usage := "usage: evento <naive|safe> clients"
+
+	args := os.Args
+	if len(args) < 3 {
+		fmt.Println(usage)
+		return
+	}
+
+	clients, err := strconv.Atoi(args[1])
+	if err != nil || clients <= 0 {
+		fmt.Println(usage)
+		return
+	}
+
+	mode := args[2]
+	if mode != "naive" && mode != "safe" {
+		fmt.Println(usage)
+		return
+	}
+
 	// Create the database and the schema
-	err := database.Setup()
+	err = database.Setup()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -51,11 +72,11 @@ func main() {
 	time.Sleep(1 * time.Second)
 
 	wg := sync.WaitGroup{}
-	for i := range 200 {
+	for i := range clients {
 		wg.Go(func() {
 			fmt.Printf("client %d\n", i)
 			client.Run(
-				"safe",
+				mode,
 				fmt.Sprintf("client-%d", i),
 				"7f3535c6-d5cb-44f0-b89b-4b349f01e49d",
 			)
