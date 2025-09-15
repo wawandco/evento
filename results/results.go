@@ -1,4 +1,6 @@
-package stats
+// Package results allows to get the results of the reservations
+// after running the clients against the server.
+package results
 
 import (
 	"cmp"
@@ -12,6 +14,7 @@ import (
 // connection string to the database, defaults to a local Postgres instance
 var databaseURL = cmp.Or(os.Getenv("DATABASE_URL"), "postgres://postgres@localhost:5432/evento")
 
+// Print the results of the reservations after running the clients against the server.
 func Print() {
 	con, err := pgx.Connect(context.Background(), databaseURL)
 	if err != nil {

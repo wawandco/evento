@@ -10,8 +10,8 @@ import (
 
 	"evento/client"
 	"evento/database"
+	"evento/results"
 	"evento/server"
-	"evento/stats"
 )
 
 func main() {
@@ -84,8 +84,6 @@ func main() {
 	}
 
 	wg.Wait()
-	stats.Print()
-
-	// Run concurrent clients to consume the database
-	// Check consistency in the database (no overbooking, etc.)
+	// Print stats to check if it worked
+	results.Print()
 }
