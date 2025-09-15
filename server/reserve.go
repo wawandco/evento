@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 )
@@ -14,6 +15,7 @@ func reserve(w http.ResponseWriter, r *http.Request) {
 
 	eventID := r.URL.Query().Get("event_id")
 	hotelID := r.URL.Query().Get("hotel_id")
+	email := r.URL.Query().Get("email")
 
 	rooms, err := strconv.Atoi(r.URL.Query().Get("rooms"))
 	if err != nil || rooms <= 0 {
@@ -52,6 +54,23 @@ func reserve(w http.ResponseWriter, r *http.Request) {
 	_, err = conn.Exec(r.Context(), query, rooms, eventID, hotelID)
 	if err != nil {
 		http.Error(w, "Error reserving rooms", http.StatusInternalServerError)
+		return
+	}
+
+	query = `
+		INSERT INTO
+			reservations (event_hotel_rooms_id, email, number_of_rooms)
+		VALUES (
+			(SELECT id FROM event_hotel_rooms WHERE event_id = $1 AND hotel_id = $2),
+			$3,
+			$4
+		);
+	`
+
+	_, err = conn.Exec(r.Context(), query, eventID, hotelID, email, rooms)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Error creating reservation", http.StatusInternalServerError)
 		return
 	}
 

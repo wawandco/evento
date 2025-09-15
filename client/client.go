@@ -6,22 +6,22 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
-// A client is a goroutine that will call the server to reserve seats.
-// It will check availability and based on it will call the reserve endpoint.
-// It will log the result of the reservation.
-
-func Client(eventID string) {
+// Run is a function that will call the server to reserve seats.
+// It checks availability and based on it will call the reserve endpoint.
+// It logs the result of the reservation.
+func Run(ID, eventID string) {
 	type available struct {
 		HotelID   string `json:"hotel_id"`
 		Available int    `json:"available"`
 	}
 
 	for {
-		availability := []available{}
+		fmt.Printf("info: client %s requesting availability\n", ID)
 		// Make a GET request to the Availability endpoint
-		res, err := http.Get("http://localhost:8080/available")
+		res, err := http.Get(fmt.Sprintf("http://localhost:8080/available?event_id=%s", eventID))
 		if err != nil {
 			fmt.Println("client: error requesting")
 			continue
@@ -38,6 +38,7 @@ func Client(eventID string) {
 			continue
 		}
 
+		availability := []available{}
 		err = json.Unmarshal(bb, &availability)
 		if err != nil {
 			fmt.Println("client: error unmarshalling")
@@ -46,11 +47,15 @@ func Client(eventID string) {
 
 		res.Body.Close()
 		if len(availability) == 0 {
-			fmt.Println("No availability")
+			fmt.Printf("info: client %s found not availability, stopping \n", ID)
 			break
 		}
 
-		url := fmt.Sprintf("http://localhost:8080/reserve?event_id=%s&hotel_id=%s&rooms=1", eventID, availability[0].HotelID)
+		url := fmt.Sprintf(
+			"http://localhost:8080/reserve?event_id=%s&hotel_id=%s&rooms=1&email=%s@client.com",
+			eventID, availability[0].HotelID, ID,
+		)
+
 		resp, err := http.Post(url, "application/x-www-form-urlencoded", nil)
 		if err != nil {
 			fmt.Println("client: error reserving")
@@ -62,6 +67,9 @@ func Client(eventID string) {
 			continue
 		}
 
-		fmt.Println("client: reservation successful")
+		fmt.Printf("info: client %s reservation successful\n", ID)
+		// Random sleep 0-500ms
+		rand := time.Now().UnixNano() % 300
+		time.Sleep(time.Duration(rand) * time.Millisecond)
 	}
 }

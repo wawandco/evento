@@ -3,20 +3,24 @@ package server
 
 import (
 	"context"
+	"log"
 	"net/http"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var conn *pgx.Conn
+var conn *pgxpool.Pool
 
 func Build() (*http.ServeMux, error) {
-	cx, err := pgx.Connect(context.Background(), "postgres://postgres@localhost:5432/evento")
+	pconfig, err := pgxpool.ParseConfig("postgres://postgres@localhost:5432/evento")
 	if err != nil {
-		return nil, err
+		log.Fatalln("Unable to parse DATABASE_URL:", err)
 	}
 
-	conn = cx
+	conn, err = pgxpool.NewWithConfig(context.Background(), pconfig)
+	if err != nil {
+		log.Fatalln("Unable to create connection pool:", err)
+	}
 
 	// Start the server
 	server := http.NewServeMux()
