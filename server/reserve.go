@@ -29,7 +29,10 @@ func reserve(w http.ResponseWriter, r *http.Request) {
 	query := `
 		SELECT (contracted - (reserved + locked)) as available
 		FROM event_hotel_rooms
-		WHERE event_id = $1 AND hotel_id = $2
+		WHERE
+			event_id = $1
+		AND
+			hotel_id = $2
 	`
 
 	var available int
@@ -48,7 +51,10 @@ func reserve(w http.ResponseWriter, r *http.Request) {
 	query = `
 		UPDATE event_hotel_rooms
 		SET reserved = reserved + $1
-		WHERE event_id = $2 AND hotel_id = $3
+		WHERE
+			event_id = $2
+		AND
+			hotel_id = $3
 	`
 
 	_, err = conn.Exec(r.Context(), query, rooms, eventID, hotelID)
