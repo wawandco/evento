@@ -1,9 +1,12 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // Reserve rooms for an event
@@ -27,22 +30,24 @@ func reserve(w http.ResponseWriter, r *http.Request) {
 
 	// check if quantity is available
 	query := `
-		SELECT (contracted - (reserved + locked)) as available
+		SELECT true
 		FROM event_hotel_rooms
 		WHERE
 			event_id = $1
 		AND
 			hotel_id = $2
+		AND
+			contracted - (reserved + locked) >= $3
 	`
-
-	var available int
-	err = conn.QueryRow(r.Context(), query, eventID, hotelID).Scan(&available)
-	if err != nil {
+	var available bool
+	err = conn.QueryRow(r.Context(), query, eventID, hotelID, rooms).Scan(&available)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		fmt.Println(err)
 		http.Error(w, "Error querying availability", http.StatusInternalServerError)
 		return
 	}
 
-	if available < rooms {
+	if errors.Is(err, pgx.ErrNoRows) {
 		http.Error(w, "Not enough rooms available", http.StatusConflict)
 		return
 	}
