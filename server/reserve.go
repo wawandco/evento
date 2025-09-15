@@ -2,7 +2,6 @@ package server
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -42,7 +41,6 @@ func reserve(w http.ResponseWriter, r *http.Request) {
 	var available bool
 	err = conn.QueryRow(r.Context(), query, eventID, hotelID, rooms).Scan(&available)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		fmt.Println(err)
 		http.Error(w, "Error querying availability", http.StatusInternalServerError)
 		return
 	}
@@ -80,7 +78,6 @@ func reserve(w http.ResponseWriter, r *http.Request) {
 
 	_, err = conn.Exec(r.Context(), query, eventID, hotelID, email, rooms)
 	if err != nil {
-		fmt.Println(err)
 		http.Error(w, "Error creating reservation", http.StatusInternalServerError)
 		return
 	}
