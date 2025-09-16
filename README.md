@@ -13,7 +13,7 @@ Then, at the root folder run Evento using using Go with:
 
 Where `200` is the number of concurrent clients to simulate and `naive` is the strategy to use. The strategies available are:
 - naive: No concurrency control at all
-- pessimistic: Pessimistic locking using `SELECT ... FOR UPDATE`
+- safe: Pessimistic locking using `SELECT ... FOR UPDATE`
 
 Database connection parameters can be set using `DATABASE_URL` environment variable. By default it will connect to `postgres://postgres@localhost:5432/evento`.
 
