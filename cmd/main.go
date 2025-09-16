@@ -52,7 +52,7 @@ func main() {
 	}
 
 	// Run the server
-	srv, err := server.Build()
+	srv, err := server.New()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

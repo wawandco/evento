@@ -16,7 +16,8 @@ var (
 	databaseURL = cmp.Or(os.Getenv("DATABASE_URL"), "postgres://postgres@localhost:5432/evento")
 )
 
-func Build() (*http.ServeMux, error) {
+// init the database connection pool
+func init() {
 	pconfig, err := pgxpool.ParseConfig(databaseURL)
 	if err != nil {
 		log.Fatalln("Unable to parse DATABASE_URL:", err)
@@ -26,7 +27,10 @@ func Build() (*http.ServeMux, error) {
 	if err != nil {
 		log.Fatalln("Unable to create connection pool:", err)
 	}
+}
 
+// New server instance
+func New() (*http.ServeMux, error) {
 	// Start the server
 	server := http.NewServeMux()
 	server.HandleFunc("GET /available", available)

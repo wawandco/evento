@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-// Show available rooms for an event
+// available rooms for an event
 func available(w http.ResponseWriter, r *http.Request) {
 	eventID := r.URL.Query().Get("event_id")
 	query := `

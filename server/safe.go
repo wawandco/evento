@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// Reserve rooms for an event
+// safe method for reserving rooms for an event.
 func safe(w http.ResponseWriter, r *http.Request) {
 	// Determine the event ID and HotelID from the request
 	// Check availability in the database
