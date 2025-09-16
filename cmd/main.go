@@ -6,7 +6,6 @@ import (
 	"os"
 	"strconv"
 	"sync"
-	"time"
 
 	"evento/client"
 	"evento/database"
@@ -52,14 +51,14 @@ func main() {
 	}
 
 	// Run the server
-	srv, err := server.New()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-		return
-	}
-
 	go func() {
+		srv, err := server.New()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+			return
+		}
+
 		fmt.Println("info: server running on :8080")
 		err = http.ListenAndServe(":8080", srv)
 		if err != nil {
@@ -69,8 +68,7 @@ func main() {
 		}
 	}()
 
-	time.Sleep(1 * time.Second)
-
+	fmt.Printf("Running %d concurrent clients until inventory has been depleted.", clients)
 	wg := sync.WaitGroup{}
 	for i := range clients {
 		wg.Go(func() {
@@ -83,7 +81,8 @@ func main() {
 		})
 	}
 
+	// Wait for all clients to finish
+	fmt.Println("Rooms Inventory reserved")
 	wg.Wait()
-	// Print stats to check if it worked
 	results.Print()
 }
