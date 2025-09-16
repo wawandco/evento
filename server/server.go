@@ -2,17 +2,22 @@
 package server
 
 import (
+	"cmp"
 	"context"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var conn *pgxpool.Pool
+var (
+	conn        *pgxpool.Pool
+	databaseURL = cmp.Or(os.Getenv("DATABASE_URL"), "postgres://postgres@localhost:5432/evento")
+)
 
 func Build() (*http.ServeMux, error) {
-	pconfig, err := pgxpool.ParseConfig("postgres://postgres@localhost:5432/evento")
+	pconfig, err := pgxpool.ParseConfig(databaseURL)
 	if err != nil {
 		log.Fatalln("Unable to parse DATABASE_URL:", err)
 	}

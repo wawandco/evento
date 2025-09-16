@@ -5,9 +5,9 @@ Evento is a proof of concept for a reservation system that handles concurrent re
 - At any given time there might be more than one instance of Evento running
 - There is only ONE instance of the database.
 - Rooms are reserved concurrently
-- Evento should not allow to reserve more than the rooms available
-- Rooms are picked by users and locked while picked but not reserved
-- Locked rooms go back to inventory after some time
+- Evento should NOT allow to reserve more than the rooms available
+- TODO: Rooms are picked by users and locked while picked but not reserved
+- TODO: Locked rooms go back to inventory after some time
 
 ### Database
 At the database level we have a few tables that store the reservation data.
@@ -19,3 +19,16 @@ At the database level we have a few tables that store the reservation data.
 
 ### Objective
 The objective of this POC is to validate that such concurrently consistent system is possible combining Go and Postgres. As a side product the repo will show the means required to achieve such consistency and allow us to do some benchmarking of the system.
+
+### Running the POC
+
+The POC can be run using Go with:
+```
+> go run ./cmd/ 200 naive
+```
+
+Where `200` is the number of concurrent clients to simulate and `naive` is the strategy to use. The strategies available are:
+- naive: No concurrency control at all
+- pessimistic: Pessimistic locking using `SELECT ... FOR UPDATE`
+
+Database connection parameters can be set using `DATABASE_URL` environment variable. By default it will connect to `postgres://postgres@localhost:5432/evento`.
