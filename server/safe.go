@@ -101,6 +101,5 @@ func safe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tx.Commit(r.Context())
-
 	w.Write([]byte("reservation successful"))
 }
