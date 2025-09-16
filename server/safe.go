@@ -8,17 +8,16 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// safe method for reserving rooms for an event.
+// Safe method for reserving rooms for an event, it uses a transaction
+// and a SELECT ... FOR UPDATE to lock the rows that are being updated.
 func safe(w http.ResponseWriter, r *http.Request) {
-	// Determine the event ID and HotelID from the request
-	// Check availability in the database
-	// If available, create a reservation record
-	// Respond with success or failure
-
+	// parse the event_id, hotel_id, email and number of rooms from the URL query parameters
+	// this is done for simplicity, in a real application you would use a JSON body or form values
 	eventID := r.URL.Query().Get("event_id")
 	hotelID := r.URL.Query().Get("hotel_id")
 	email := r.URL.Query().Get("email")
 
+	// parse the number of rooms to reserve and validate is a positive integer
 	rooms, err := strconv.Atoi(r.URL.Query().Get("rooms"))
 	if err != nil || rooms <= 0 {
 		w.Write([]byte("invalid number of rooms"))
@@ -39,8 +38,8 @@ func safe(w http.ResponseWriter, r *http.Request) {
 	defer tx.Rollback(r.Context())
 
 	// check if quantity is available with a FOR UPDATE lock
-	// IMPORTANT: if the FOR UPDATE is not used, the transaction is useless
-	// because the rows are not locked and other transactions can modify them
+	// IMPORTANT: if the FOR UPDATE is not used, the transaction does not prevent from
+	// overbooking.because the rows are not locked and other transactions can modify them
 	// before the current transaction is committed.
 	// This can lead to overbooking.
 	query := `
@@ -54,6 +53,7 @@ func safe(w http.ResponseWriter, r *http.Request) {
 			contracted - (reserved + locked) >= $3
 		FOR UPDATE
 	`
+
 	var available bool
 	err = tx.QueryRow(r.Context(), query, eventID, hotelID, rooms).Scan(&available)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
@@ -66,7 +66,8 @@ func safe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// reserve the rooms
+	// update rooms availability by increasing the reserved rooms in the
+	// event_hotel_rooms table
 	query = `
 		UPDATE event_hotel_rooms
 		SET reserved = reserved + $1
@@ -82,6 +83,7 @@ func safe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// insert the reservation record in the reservations table
 	query = `
 		INSERT INTO
 			reservations (event_hotel_rooms_id, email, number_of_rooms)

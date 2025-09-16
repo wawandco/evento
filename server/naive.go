@@ -8,17 +8,16 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// naive method for reserving rooms for an event.
+// naive method for reserving rooms for an event. We use the database connection
+// pool to query the database, update availability and create the reservation.
 func naive(w http.ResponseWriter, r *http.Request) {
-	// Determine the event ID and HotelID from the request
-	// Check availability in the database
-	// If available, create a reservation record
-	// Respond with success or failure
-
+	// parse the event_id, hotel_id, email and number of rooms from the URL query parameters
+	// this is done for simplicity, in a real application you would use a JSON body or form values
 	eventID := r.URL.Query().Get("event_id")
 	hotelID := r.URL.Query().Get("hotel_id")
 	email := r.URL.Query().Get("email")
 
+	// parse the number of rooms to reserve and validate is a positive integer
 	rooms, err := strconv.Atoi(r.URL.Query().Get("rooms"))
 	if err != nil || rooms <= 0 {
 		w.Write([]byte("invalida number of rooms"))
@@ -27,7 +26,8 @@ func naive(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check if quantity is available
+	// check if the number of rooms specified is available
+	// in the event_hotel_rooms table availability
 	query := `
 		SELECT true
 		FROM event_hotel_rooms
@@ -50,7 +50,7 @@ func naive(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// reserve the rooms
+	// Update the availability by increasing the reserved rooms
 	query = `
 		UPDATE event_hotel_rooms
 		SET reserved = reserved + $1
@@ -66,6 +66,7 @@ func naive(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// insert the reservation record in the reservations table
 	query = `
 		INSERT INTO
 			reservations (event_hotel_rooms_id, email, number_of_rooms)
