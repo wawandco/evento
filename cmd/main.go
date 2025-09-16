@@ -82,7 +82,9 @@ func main() {
 	}
 
 	// Wait for all clients to finish
-	fmt.Println("Rooms Inventory reserved")
 	wg.Wait()
+	fmt.Println("Rooms Inventory reserved")
+
+	// Print the inventory
 	results.Print()
 }
