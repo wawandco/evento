@@ -2,21 +2,18 @@
 package database
 
 import (
-	"cmp"
 	_ "embed"
-	"os"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// connection string to the database, defaults to a local Postgres instance
-var databaseURL = cmp.Or(os.Getenv("DATABASE_URL"), "postgres://postgres@localhost:5432/evento")
-
-func Setup() error {
-	err := create()
+func Setup(conn *pgxpool.Pool) error {
+	err := create(conn.Config().ConnString())
 	if err != nil {
 		return err
 	}
 
-	err = createSchema()
+	err = createSchema(conn)
 	if err != nil {
 		return err
 	}

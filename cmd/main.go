@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,6 +13,9 @@ import (
 	"evento/results"
 	"evento/server"
 )
+
+// connection string to the database, defaults to a local Postgres instance
+var databaseURL = cmp.Or(os.Getenv("DATABASE_URL"), "postgres://postgres@localhost:5432/evento")
 
 func main() {
 	usage := "usage: evento <naive|safe> clients"
@@ -34,8 +38,15 @@ func main() {
 		return
 	}
 
+	conn, err := database.Connect(databaseURL)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+		return
+	}
+
 	// Create the database and the schema
-	err = database.Setup()
+	err = database.Setup(conn)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -43,7 +54,7 @@ func main() {
 	}
 
 	// Load initial data
-	err = database.Load()
+	err = database.Load(conn)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -52,7 +63,7 @@ func main() {
 
 	// Run the server
 	go func() {
-		srv, err := server.New()
+		srv, err := server.New(conn)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)

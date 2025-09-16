@@ -2,35 +2,18 @@
 package server
 
 import (
-	"cmp"
-	"context"
-	"log"
 	"net/http"
-	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var (
-	conn        *pgxpool.Pool
-	databaseURL = cmp.Or(os.Getenv("DATABASE_URL"), "postgres://postgres@localhost:5432/evento")
-)
-
-// init the database connection pool
-func init() {
-	pconfig, err := pgxpool.ParseConfig(databaseURL)
-	if err != nil {
-		log.Fatalln("Unable to parse DATABASE_URL:", err)
-	}
-
-	conn, err = pgxpool.NewWithConfig(context.Background(), pconfig)
-	if err != nil {
-		log.Fatalln("Unable to create connection pool:", err)
-	}
-}
+var conn *pgxpool.Pool
 
 // New server instance
-func New() (*http.ServeMux, error) {
+func New(cx *pgxpool.Pool) (*http.ServeMux, error) {
+	// Store the connection pool in a package variable
+	conn = cx
+
 	// Start the server
 	server := http.NewServeMux()
 	server.HandleFunc("GET /available", available)

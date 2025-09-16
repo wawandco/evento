@@ -9,9 +9,9 @@ import (
 )
 
 // Creates the database to be used by Evento
-func create() error {
+func create(url string) error {
 	// Connect to the default "postgres" database to create a new database
-	defaultDB := strings.Replace(databaseURL, "evento", "postgres", 1)
+	defaultDB := strings.Replace(url, "evento", "postgres", 1)
 	con, err := pgx.Connect(context.Background(), defaultDB)
 	if err != nil {
 		return fmt.Errorf("error connecting to the default database: %w", err)
