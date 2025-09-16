@@ -76,7 +76,8 @@ func Run(kind, ID, eventID string) {
 
 		fmt.Printf("info: client %s reservation successful\n", ID)
 
-		// Random sleep after reservation
+		// Random sleep of less than 300 ms after reservation. Using the current time
+		// in nanoseconds to generate a pseudo-random number.
 		rand := time.Now().UnixNano() % 300
 		time.Sleep(time.Duration(rand) * time.Millisecond)
 	}
