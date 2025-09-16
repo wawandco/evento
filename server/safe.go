@@ -28,6 +28,8 @@ func safe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Start a new transaction with the request context to avoid
+	// "transaction has already been committed or rolled back" errors
+	// if the client disconnects before the transaction is committed.
 	tx, err := conn.Begin(r.Context())
 	if err != nil {
 		http.Error(w, "error starting transaction", http.StatusInternalServerError)
