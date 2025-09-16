@@ -2,14 +2,11 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
 // Show available rooms for an event
 func available(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("info: available called")
-
 	eventID := r.URL.Query().Get("event_id")
 	query := `
 	SELECT hotel_id, (contracted-(reserved+locked)) as available
@@ -21,7 +18,6 @@ func available(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := conn.Query(r.Context(), query, eventID)
 	if err != nil {
-		fmt.Println("error querying database", err)
 		http.Error(w, "Error querying database", http.StatusInternalServerError)
 		return
 	}
@@ -37,7 +33,6 @@ func available(w http.ResponseWriter, r *http.Request) {
 		var hotel hotelAvailability
 
 		if err := rows.Scan(&hotel.HotelID, &hotel.Available); err != nil {
-			fmt.Println("error scanning row")
 			http.Error(w, "Error scanning row", http.StatusInternalServerError)
 			return
 		}
@@ -47,7 +42,6 @@ func available(w http.ResponseWriter, r *http.Request) {
 
 	dat, err := json.Marshal(availability)
 	if err != nil {
-		fmt.Println("error marshalling json", err)
 		http.Error(w, "Error marshalling json", http.StatusInternalServerError)
 		return
 	}
