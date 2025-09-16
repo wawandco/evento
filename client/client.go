@@ -14,11 +14,6 @@ import (
 // It logs the result of the reservation. It will run until there
 // is no availability in any hotel.
 func Run(kind, ID, eventID string) {
-	type available struct {
-		HotelID   string `json:"hotel_id"`
-		Available int    `json:"available"`
-	}
-
 	for {
 		fmt.Printf("info: client %s requesting availability\n", ID)
 		// Make a GET request to the Availability endpoint which will return a
@@ -43,7 +38,15 @@ func Run(kind, ID, eventID string) {
 			continue
 		}
 
-		availability := []available{}
+		// available is a struct to unmarshal the JSON response from the server
+		// when checking availability.
+		// Example: [{"hotel_id":"1","available":10},{"hotel_id":"2","available":5}]
+		availability := []struct {
+			HotelID   string `json:"hotel_id"`
+			Available int    `json:"available"`
+		}{}
+
+		// Unmarshal the JSON response and retry.
 		err = json.Unmarshal(bb, &availability)
 		if err != nil {
 			fmt.Println("client: error unmarshalling")
