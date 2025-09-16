@@ -53,7 +53,7 @@ func Run(kind, ID, eventID string) {
 
 		// If there is no availability, stop the client.
 		if len(availability) == 0 {
-			fmt.Printf("info: client %s found not availability, stopping \n", ID)
+			fmt.Printf("info: client %s found no availability, stopping \n", ID)
 			break
 		}
 
