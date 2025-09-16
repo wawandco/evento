@@ -15,7 +15,10 @@ import (
 )
 
 // connection string to the database, defaults to a local Postgres instance
-var databaseURL = cmp.Or(os.Getenv("DATABASE_URL"), "postgres://postgres@localhost:5432/evento")
+var databaseURL = cmp.Or(
+	os.Getenv("DATABASE_URL"),
+	"postgres://postgres@localhost:5432/evento",
+)
 
 func main() {
 	usage := "usage: evento <naive|safe> clients"
