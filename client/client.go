@@ -55,10 +55,13 @@ func Run(port, kind, ID, eventID string) {
 			break
 		}
 
+		// random number of rooms 1-5
+		rooms := int(time.Now().UnixNano()%5) + 1
+
 		// If there is availability reserve 1 room in the first hotel with availability.
 		url := fmt.Sprintf(
-			"http://localhost:%s/reserve/%s?event_id=%s&hotel_id=%s&rooms=1&email=%s@client.com",
-			port, kind, eventID, availability[0].HotelID, ID,
+			"http://localhost:%s/reserve/%s?event_id=%s&hotel_id=%s&rooms=%d&email=%s@client.com",
+			port, kind, eventID, availability[0].HotelID, rooms, ID,
 		)
 
 		_, err = http.Post(url, "application/x-www-form-urlencoded", nil)

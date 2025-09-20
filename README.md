@@ -1,28 +1,38 @@
 Evento is a proof of concept for a reservation system that handles concurrent reservation requests consistently. It consists of HTTP endpoints and is highly concurrent, connecting to a Postgres database.
 
 ### Objective
-The objective of this POC is to validate that a concurrently consistent system is possible using Go and Postgres. As a side product, the repo demonstrates the means required to achieve such consistency and allows benchmarking of the system.
+The objective of this POC is to validate that a concurrently consistent system is possible using Go and Postgres. As a side product, the repo demonstrates the means required to achieve such consistency and compare different strategies to achieve it.
 
 ### Running the POC
 
-Ensure you've cloned this repo and your current working directory is the root of it. To run Evento you need to have Go installed on your machine.
-Then, at the root folder run Evento using Go with:
+Ensure you've cloned this repo and your current working directory is the root of it. To run Evento you need to have Go installed on your machine. Then, at the root folder run Evento using Go with:
 ```
-> go run ./cmd/ -clients 200 -mode naive -rooms 200
+> go run ./cmd/
 ```
 
-Where `200` is the number of concurrent clients to simulate, `naive` is the strategy to use, and `200` is the number of rooms per hotel. The strategies available are:
+You can specify the number of concurrent clients, servers, the mode to use and the number of rooms per hotel using command parameters:
+
+```
+> go run ./cmd/ --clients 200 --strategy naive --rooms 200 --servers 2
+```
+
+Where:
+- `--clients 200` specifies the number of concurrent clients to simulate,
+- `--mode naive` is the mode to use
+- `--rooms 200` is the number of rooms per hotel
+- `--servers 2` is the number of servers to run
+
+The strategies available are:
 - naive: No concurrency control at all
-- pessimistic: Pessimistic locking using `SELECT ... FOR UPDATE`
+- pessimistic: Pessimistic locking using `SELECT ... FOR UPDATE`func
 - atomic: Transactional approach without locking
 - optimistic: Optimistic locking using `updated_at` timestamp
-
-To run multiple servers simultaneously, you can start separate instances on different ports and configure clients to distribute requests among them.
 
 Database connection parameters can be set using `DATABASE_URL` environment variable. By default it will connect to `postgres://postgres@localhost:5432/evento`.
 
 ### Statements
-- Evento has a set of rooms available
+- Evento has a set of rooms available at different hotels
+- Multiple clients could try to reserve rooms at the same time
 - At any given time there might be more than one instance of Evento running
 - There is only ONE instance of the database.
 - Rooms are reserved concurrently
@@ -33,7 +43,7 @@ At the database level we have a few tables that store the reservation data.
 
 - events (id, name)
 - hotels (id, name)
-- event_hotel_rooms (id, event_id, hotel_id, assigned, reserved, locked)
+- event_hotel_rooms (id, event_id, hotel_id, assigned, reserved, locked, updated_at)
 - reservations (id, name, event_hotel_rooms_id, number)
 
 ### Possible improvements / TODOs
