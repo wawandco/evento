@@ -13,9 +13,11 @@ Then, at the root folder run Evento using Go with:
 
 Where `200` is the number of concurrent clients to simulate, `naive` is the strategy to use, and `200` is the number of rooms per hotel. The strategies available are:
 - naive: No concurrency control at all
-- safe: Pessimistic locking using `SELECT ... FOR UPDATE`
+- pessimistic: Pessimistic locking using `SELECT ... FOR UPDATE`
 - atomic: Transactional approach without locking
 - optimistic: Optimistic locking using `updated_at` timestamp
+
+To run multiple servers simultaneously, you can start separate instances on different ports and configure clients to distribute requests among them.
 
 Database connection parameters can be set using `DATABASE_URL` environment variable. By default it will connect to `postgres://postgres@localhost:5432/evento`.
 

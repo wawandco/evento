@@ -18,14 +18,18 @@ import (
 )
 
 var (
-	mode    string
+	// the mode of operation: naive, safe, atomic, optimistic
+	mode string
+	// number of concurrent clients
 	clients int
-	rooms   int
+	// number of rooms contracted per hotel
+	rooms int
+	// number of server instances
 	servers int
 )
 
 func init() {
-	flag.StringVar(&mode, "mode", "naive", "mode of operation: naive, safe, atomic, optimistic, defaults to naive")
+	flag.StringVar(&mode, "mode", "naive", "mode of operation: naive, pessimistic, atomic, optimistic, defaults to naive")
 	flag.IntVar(&clients, "clients", 200, "number of concurrent clients, defaults to 200")
 	flag.IntVar(&rooms, "rooms", 200, "number of rooms per hotel, defaults to 200")
 	flag.IntVar(&servers, "servers", 2, "number of server instances, defaults to 2")
@@ -34,7 +38,7 @@ func init() {
 
 func main() {
 	modes := []string{"naive", "atomic", "pessimistic", "optimistic"}
-	usage := fmt.Sprintf("usage: evento [# of clients] [%s] [-rooms number]", strings.Join(modes, "|"))
+	usage := fmt.Sprintf("usage: evento [# of clients] [%s] [-rooms number] [-servers number]", strings.Join(modes, "|"))
 
 	if clients <= 0 {
 		fmt.Println("error: invalid number of clients")
@@ -71,9 +75,10 @@ func main() {
 
 	// Run the servers
 	runningPorts := []string{}
-	for v := range servers {
-		port := 8080 + v
-		go func(port int) {
+	wg := sync.WaitGroup{}
+	for i := range servers {
+		port := 8080 + i
+		go func() {
 			srv, err := server.New(conn)
 			if err != nil {
 				fmt.Println(err)
@@ -82,22 +87,24 @@ func main() {
 			}
 
 			fmt.Printf("- Server running on port %d\n", port)
-
+			runningPorts = append(runningPorts, fmt.Sprintf("%d", port))
 			// Start the server
 			err = http.ListenAndServe(fmt.Sprintf(":%d", port), srv)
 			if err != nil {
 				return
 			}
-		}(port)
-		runningPorts = append(runningPorts, fmt.Sprintf("%d", port))
+		}()
 	}
+
+	// Wait for servers to start
+	time.Sleep(2 * time.Second)
 
 	// Start timing the execution
 	start := time.Now()
-
-	wg := sync.WaitGroup{}
-	for i := range clients {
-		wg.Go(func() {
+	for i := 0; i < clients; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
 			client.Run(
 				// Randomly pick a server port to distribute the load
 				runningPorts[time.Now().UnixNano()%int64(len(runningPorts))],
@@ -105,10 +112,10 @@ func main() {
 				fmt.Sprintf("client-%d", i),
 				"7f3535c6-d5cb-44f0-b89b-4b349f01e49d",
 			)
-		})
+		}(i)
 	}
 
-	fmt.Printf("- %d `%s` clients making reservations\n", clients, mode)
+	fmt.Printf("- %d `%s` clients making reservations across %d servers\n", clients, mode, servers)
 
 	// Wait for all clients to finish
 	wg.Wait()
