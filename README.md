@@ -3,6 +3,8 @@ Evento is a proof of concept for a reservation system that handles concurrent re
 ### Objective
 The objective of this POC is to validate that a concurrently consistent system is possible using Go and Postgres. As a side product, the repo demonstrates the means required to achieve such consistency and compare different strategies to achieve it.
 
+[![Boxes](boxes.png)](boxes.png)
+
 ### Running the POC
 
 Ensure you've cloned this repo and your current working directory is the root of it. To run Evento you need to have Go installed on your machine. Then, at the root folder run Evento using Go with:
