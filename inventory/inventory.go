@@ -1,5 +1,4 @@
-// Package results allows to get the results of the reservations
-// after running the clients against the server.
+// Package inventory allows to print a report of the reservations.
 package inventory
 
 import (

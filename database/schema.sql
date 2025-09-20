@@ -1,3 +1,8 @@
+DROP TABLE IF EXISTS reservations;
+DROP TABLE IF EXISTS event_hotel_rooms;
+DROP TABLE IF EXISTS hotel;
+DROP TABLE IF EXISTS events;
+
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS  events (
@@ -17,7 +22,8 @@ CREATE TABLE IF NOT EXISTS event_hotel_rooms  (
 
     contracted INTEGER NOT NULL DEFAULT 0,
     locked INTEGER NOT NULL DEFAULT 0,
-    reserved INTEGER NOT NULL DEFAULT 0
+    reserved INTEGER NOT NULL DEFAULT 0,
+    updated_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS reservations (

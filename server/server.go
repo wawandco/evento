@@ -20,6 +20,7 @@ func New(cx *pgxpool.Pool) (*http.ServeMux, error) {
 	server.HandleFunc("POST /reserve/naive", naive)
 	server.HandleFunc("POST /reserve/safe", safe)
 	server.HandleFunc("POST /reserve/atomic", atomic)
+	server.HandleFunc("POST /reserve/optimistic", optimistic)
 
 	return server, nil
 }

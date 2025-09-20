@@ -8,13 +8,14 @@ The objective of this POC is to validate that a concurrently consistent system i
 Ensure you've cloned this repo and your current working directory is the root of it. To run Evento you need to have Go installed on your machine.
 Then, at the root folder run Evento using Go with:
 ```
-> go run ./cmd/ 200 naive
+> go run ./cmd/ -clients 200 -mode naive
 ```
 
 Where `200` is the number of concurrent clients to simulate and `naive` is the strategy to use. The strategies available are:
 - naive: No concurrency control at all
 - safe: Pessimistic locking using `SELECT ... FOR UPDATE`
 - atomic: Transactional approach without locking
+- optimistic: Optimistic locking using `updated_at` timestamp
 
 Database connection parameters can be set using `DATABASE_URL` environment variable. By default it will connect to `postgres://postgres@localhost:5432/evento`.
 
@@ -35,6 +36,6 @@ At the database level we have a few tables that store the reservation data.
 
 ### Possible improvements / TODOs
 
-- Locking rooms (part of the reservation)
+- Multiple servers running (multiple servers instances)
 - Data customization (events, hotels, rooms): Currently depends on database/data.sql
-- Multiple servers running (multiple containers)
+- Locking rooms (part of the reservation)

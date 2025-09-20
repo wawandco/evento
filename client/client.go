@@ -61,17 +61,13 @@ func Run(kind, ID, eventID string) {
 			kind, eventID, availability[0].HotelID, ID,
 		)
 
-		resp, err := http.Post(url, "application/x-www-form-urlencoded", nil)
+		_, err = http.Post(url, "application/x-www-form-urlencoded", nil)
 		if err != nil {
 			continue
 		}
 
-		if resp.StatusCode != http.StatusOK {
-			continue
-		}
-
-		// Random sleep of less than 300 ms after reservation. Using the current time
-		// in nanoseconds to generate a pseudo-random number.
+		// Indpendent of the response take a random sleep of less than 300 ms after calling reservation.
+		// Using the mod operator on the current time in nanoseconds to generate a pseudo-random number.
 		rand := time.Now().UnixNano() % 300
 		time.Sleep(time.Duration(rand) * time.Millisecond)
 	}

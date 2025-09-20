@@ -2,13 +2,14 @@ package main
 
 import (
 	"cmp"
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
 	"slices"
-	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"evento/client"
 	"evento/database"
@@ -16,36 +17,34 @@ import (
 	"evento/server"
 )
 
-// connection string to the database, defaults to a local Postgres instance
-var databaseURL = cmp.Or(
-	os.Getenv("DATABASE_URL"),
-	"postgres://postgres@localhost:5432/evento",
+var (
+	mode    string
+	clients int
 )
 
+func init() {
+	flag.StringVar(&mode, "mode", "naive", "mode of operation: naive, safe, atomic, optimistic, defaults to naive")
+	flag.IntVar(&clients, "clients", 200, "number of concurrent clients, defaults to 200")
+	flag.Parse()
+}
+
 func main() {
-	modes := []string{"naive", "safe", "atomic"}
+	modes := []string{"naive", "safe", "atomic", "optimistic"}
 	usage := fmt.Sprintf("usage: evento [# of clients] [%s]", strings.Join(modes, "|"))
 
-	args := os.Args
-	if len(args) < 3 {
-		fmt.Println(usage)
-		return
-	}
-
-	clients, err := strconv.Atoi(args[1])
-	if err != nil || clients <= 0 {
+	if clients <= 0 {
 		fmt.Println("erro :invalid number of clients")
 		fmt.Println(usage)
 		return
 	}
 
-	mode := args[2]
 	if !slices.Contains(modes, mode) {
 		fmt.Println(usage)
 		return
 	}
 
-	conn, err := database.Connect(databaseURL)
+	dbURL := cmp.Or(os.Getenv("DATABASE_URL"), "postgres://postgres@localhost:5432/evento")
+	conn, err := database.Connect(dbURL)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -60,8 +59,8 @@ func main() {
 		return
 	}
 
-	fmt.Println("Database Ready")
-	fmt.Println("Starting inventory")
+	fmt.Println("- Database Ready (created, migrated and seeded)")
+	fmt.Println("> Starting inventory")
 	inventory.Print(conn)
 	fmt.Println()
 
@@ -74,7 +73,7 @@ func main() {
 			return
 		}
 
-		fmt.Println("Server running")
+		fmt.Println("- Server running")
 		err = http.ListenAndServe(":8080", srv)
 		if err != nil {
 			fmt.Println(err)
@@ -82,6 +81,9 @@ func main() {
 			return
 		}
 	}()
+
+	// Start timing the execution
+	start := time.Now()
 
 	wg := sync.WaitGroup{}
 	for i := range clients {
@@ -94,11 +96,16 @@ func main() {
 		})
 	}
 
-	fmt.Println("All clients started")
+	fmt.Printf("- %d `%s` clients making reservations\n", clients, mode)
 
 	// Wait for all clients to finish
 	wg.Wait()
-	fmt.Printf("\nFinal Inventory\n")
+	
+	// Calculate and display execution time
+	duration := time.Since(start)
+	fmt.Printf("\n> Execution time: %v\n", duration)
+	
+	fmt.Printf("\n> Final Inventory\n")
 
 	// Print the inventory
 	inventory.Print(conn)

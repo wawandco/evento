@@ -4,16 +4,15 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
 
-// Atomic method for reserving rooms for an event, it uses a transaction
-// without locking. This can lead to overbooking to demonstrate the difference
-// between thread-safe and atomic operations.
-func atomic(w http.ResponseWriter, r *http.Request) {
+// Optimistic method for reserving rooms for an event, it uses a transaction
+// with optimistic locking based on updated_at timestamp to prevent overbooking.
+func optimistic(w http.ResponseWriter, r *http.Request) {
 	// parse the event_id, hotel_id, email and number of rooms from the URL query parameters
-	// this is done for simplicity, in a real application you would use a JSON body or form values
 	eventID := r.URL.Query().Get("event_id")
 	hotelID := r.URL.Query().Get("hotel_id")
 	email := r.URL.Query().Get("email")
@@ -27,9 +26,7 @@ func atomic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Start a new transaction with the request context to avoid
-	// "transaction has already been committed or rolled back" errors
-	// if the client disconnects before the transaction is committed.
+	// Start a new transaction with the request context
 	tx, err := conn.Begin(r.Context())
 	if err != nil {
 		http.Error(w, "error starting transaction", http.StatusInternalServerError)
@@ -38,12 +35,9 @@ func atomic(w http.ResponseWriter, r *http.Request) {
 	// Defer a rollback in case of any errors.
 	defer tx.Rollback(r.Context())
 
-	// check if quantity is available WITHOUT a FOR UPDATE lock
-	// This demonstrates that transactions alone don't prevent overbooking
-	// because rows are not locked and other transactions can modify them
-	// before the current transaction is committed.
+	// check if quantity is available and get current updated_at timestamp
 	query := `
-		SELECT true
+		SELECT updated_at
 		FROM event_hotel_rooms
 		WHERE
 			event_id = $1
@@ -53,10 +47,10 @@ func atomic(w http.ResponseWriter, r *http.Request) {
 			contracted - (reserved + locked) >= $3
 	`
 
-	var available bool
-	err = tx.QueryRow(r.Context(), query, eventID, hotelID, rooms).Scan(&available)
+	var updatedAt time.Time
+	err = tx.QueryRow(r.Context(), query, eventID, hotelID, rooms).Scan(&updatedAt)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		http.Error(w, "Error querying availability", http.StatusInternalServerError)
+		http.Error(w, "Error querying availability:"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -65,20 +59,28 @@ func atomic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// update rooms availability by increasing the reserved rooms in the
-	// event_hotel_rooms table
+	// update rooms availability by increasing the reserved rooms and updating timestamp
 	query = `
 		UPDATE event_hotel_rooms
-		SET reserved = reserved + $1
+		SET reserved = reserved + $1, updated_at = NOW()
 		WHERE
 			event_id = $2
 		AND
 			hotel_id = $3
+		AND
+			updated_at = $4
 	`
 
-	_, err = tx.Exec(r.Context(), query, rooms, eventID, hotelID)
+	res, err := tx.Exec(r.Context(), query, rooms, eventID, hotelID, updatedAt)
 	if err != nil {
 		http.Error(w, "Error reserving rooms", http.StatusInternalServerError)
+		return
+	}
+
+	// Check if the update affected any rows (optimistic locking)
+	if res.RowsAffected() == 0 {
+		// Log the conflict for debugging
+		http.Error(w, "Conflict: data was modified by another transaction", http.StatusConflict)
 		return
 	}
 
