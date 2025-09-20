@@ -21,17 +21,19 @@ var (
 	mode    string
 	clients int
 	rooms   int
+	servers int
 )
 
 func init() {
 	flag.StringVar(&mode, "mode", "naive", "mode of operation: naive, safe, atomic, optimistic, defaults to naive")
 	flag.IntVar(&clients, "clients", 200, "number of concurrent clients, defaults to 200")
 	flag.IntVar(&rooms, "rooms", 200, "number of rooms per hotel, defaults to 200")
+	flag.IntVar(&servers, "servers", 2, "number of server instances, defaults to 2")
 	flag.Parse()
 }
 
 func main() {
-	modes := []string{"naive", "safe", "atomic", "optimistic"}
+	modes := []string{"naive", "atomic", "pessimistic", "optimistic"}
 	usage := fmt.Sprintf("usage: evento [# of clients] [%s] [-rooms number]", strings.Join(modes, "|"))
 
 	if clients <= 0 {
@@ -67,23 +69,28 @@ func main() {
 	inventory.Print(conn)
 	fmt.Println()
 
-	// Run the server
-	go func() {
-		srv, err := server.New(conn)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-			return
-		}
+	// Run the servers
+	runningPorts := []string{}
+	for v := range servers {
+		port := 8080 + v
+		go func(port int) {
+			srv, err := server.New(conn)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+				return
+			}
 
-		fmt.Println("- Server running")
-		err = http.ListenAndServe(":8080", srv)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-			return
-		}
-	}()
+			fmt.Printf("- Server running on port %d\n", port)
+
+			// Start the server
+			err = http.ListenAndServe(fmt.Sprintf(":%d", port), srv)
+			if err != nil {
+				return
+			}
+		}(port)
+		runningPorts = append(runningPorts, fmt.Sprintf("%d", port))
+	}
 
 	// Start timing the execution
 	start := time.Now()
@@ -92,6 +99,8 @@ func main() {
 	for i := range clients {
 		wg.Go(func() {
 			client.Run(
+				// Randomly pick a server port to distribute the load
+				runningPorts[time.Now().UnixNano()%int64(len(runningPorts))],
 				mode,
 				fmt.Sprintf("client-%d", i),
 				"7f3535c6-d5cb-44f0-b89b-4b349f01e49d",

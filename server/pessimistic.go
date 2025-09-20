@@ -8,9 +8,9 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// Safe method for reserving rooms for an event, it uses a transaction
+// Pessimistic method for reserving rooms for an event, it uses a transaction
 // and a SELECT ... FOR UPDATE to lock the rows that are being updated.
-func safe(w http.ResponseWriter, r *http.Request) {
+func pessimistic(w http.ResponseWriter, r *http.Request) {
 	// parse the event_id, hotel_id, email and number of rooms from the URL query parameters
 	// this is done for simplicity, in a real application you would use a JSON body or form values
 	eventID := r.URL.Query().Get("event_id")

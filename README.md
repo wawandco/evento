@@ -36,5 +36,5 @@ At the database level we have a few tables that store the reservation data.
 
 ### Possible improvements / TODOs
 
-- Multiple servers running (multiple servers instances)
 - Locking rooms (part of the reservation)
+- Better TUI, including progress.

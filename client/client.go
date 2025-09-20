@@ -13,12 +13,12 @@ import (
 // It checks availability and based on it will call the reserve endpoint.
 // It logs the result of the reservation. It will run until there
 // is no availability in any hotel.
-func Run(kind, ID, eventID string) {
+func Run(port, kind, ID, eventID string) {
 	for {
 		// Make a GET request to the Availability endpoint which will return a
 		// JSON array of available hotels with available rooms.
 		// Example: [{"hotel_id":"1","available":10},{"hotel_id":"2","available":5}]
-		res, err := http.Get(fmt.Sprintf("http://localhost:8080/available?event_id=%s", eventID))
+		res, err := http.Get(fmt.Sprintf("http://localhost:%s/available?event_id=%s", port, eventID))
 		if err != nil {
 			continue
 		}
@@ -57,8 +57,8 @@ func Run(kind, ID, eventID string) {
 
 		// If there is availability reserve 1 room in the first hotel with availability.
 		url := fmt.Sprintf(
-			"http://localhost:8080/reserve/%s?event_id=%s&hotel_id=%s&rooms=1&email=%s@client.com",
-			kind, eventID, availability[0].HotelID, ID,
+			"http://localhost:%s/reserve/%s?event_id=%s&hotel_id=%s&rooms=1&email=%s@client.com",
+			port, kind, eventID, availability[0].HotelID, ID,
 		)
 
 		_, err = http.Post(url, "application/x-www-form-urlencoded", nil)
