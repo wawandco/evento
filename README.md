@@ -41,6 +41,8 @@ Database connection parameters can be set using `DATABASE_URL` environment varia
 ### Database
 At the database level we have a few tables that store the reservation data.
 
+[![ERD](erd.png)](erd.png)
+
 - events (id, name)
 - hotels (id, name)
 - event_hotel_rooms (id, event_id, hotel_id, assigned, reserved, locked, updated_at)
