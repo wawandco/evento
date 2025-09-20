@@ -18,5 +18,10 @@ func Setup(conn *pgxpool.Pool) error {
 		return err
 	}
 
+	err = Load(conn)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

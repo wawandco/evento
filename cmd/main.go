@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"slices"
 	"strconv"
+	"strings"
 	"sync"
 
 	"evento/client"
 	"evento/database"
-	"evento/results"
+	"evento/inventory"
 	"evento/server"
 )
 
@@ -21,7 +23,8 @@ var databaseURL = cmp.Or(
 )
 
 func main() {
-	usage := "usage: evento <naive|safe> clients"
+	modes := []string{"naive", "safe", "atomic"}
+	usage := fmt.Sprintf("usage: evento [# of clients] [%s]", strings.Join(modes, "|"))
 
 	args := os.Args
 	if len(args) < 3 {
@@ -31,12 +34,13 @@ func main() {
 
 	clients, err := strconv.Atoi(args[1])
 	if err != nil || clients <= 0 {
+		fmt.Println("erro :invalid number of clients")
 		fmt.Println(usage)
 		return
 	}
 
 	mode := args[2]
-	if mode != "naive" && mode != "safe" {
+	if !slices.Contains(modes, mode) {
 		fmt.Println(usage)
 		return
 	}
@@ -56,13 +60,10 @@ func main() {
 		return
 	}
 
-	// Load initial data
-	err = database.Load(conn)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-		return
-	}
+	fmt.Println("Database Ready")
+	fmt.Println("Starting inventory")
+	inventory.Print(conn)
+	fmt.Println()
 
 	// Run the server
 	go func() {
@@ -73,7 +74,7 @@ func main() {
 			return
 		}
 
-		fmt.Println("info: server running on :8080")
+		fmt.Println("Server running")
 		err = http.ListenAndServe(":8080", srv)
 		if err != nil {
 			fmt.Println(err)
@@ -82,11 +83,9 @@ func main() {
 		}
 	}()
 
-	fmt.Printf("Running %d concurrent clients until inventory has been depleted.", clients)
 	wg := sync.WaitGroup{}
 	for i := range clients {
 		wg.Go(func() {
-			fmt.Printf("client %d\n", i)
 			client.Run(
 				mode,
 				fmt.Sprintf("client-%d", i),
@@ -95,10 +94,12 @@ func main() {
 		})
 	}
 
+	fmt.Println("All clients started")
+
 	// Wait for all clients to finish
 	wg.Wait()
-	fmt.Println("Rooms Inventory reserved")
+	fmt.Printf("\nFinal Inventory\n")
 
 	// Print the inventory
-	results.Print()
+	inventory.Print(conn)
 }

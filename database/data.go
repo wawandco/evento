@@ -17,6 +17,5 @@ func Load(con *pgxpool.Pool) error {
 		return fmt.Errorf("error running data script: %w", err)
 	}
 
-	fmt.Println("info: data loaded")
 	return nil
 }

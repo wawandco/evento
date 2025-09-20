@@ -17,6 +17,5 @@ func createSchema(con *pgxpool.Pool) error {
 		return fmt.Errorf("error running schema: %w", err)
 	}
 
-	fmt.Println("info: schema completed")
 	return nil
 }

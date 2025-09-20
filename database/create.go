@@ -27,7 +27,6 @@ func create(url string) error {
 	}
 
 	if exists {
-		fmt.Println("info: database 'evento' already exists")
 		return nil
 	}
 
@@ -37,6 +36,5 @@ func create(url string) error {
 		return fmt.Errorf("error creating database: %w", err)
 	}
 
-	fmt.Println("info: database 'evento' created successfully")
 	return nil
 }
