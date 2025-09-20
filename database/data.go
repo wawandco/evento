@@ -7,6 +7,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// Seed the database with initial data for testing purposes, it starts by cleaning up any existing data.
+// rooms is the number of rooms to seed the database with per hotel.
 func seed(con *pgxpool.Pool, rooms int) error {
 	_, err := con.Exec(context.Background(), `
 		DELETE FROM events;
