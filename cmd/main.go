@@ -20,20 +20,22 @@ import (
 var (
 	mode    string
 	clients int
+	rooms   int
 )
 
 func init() {
 	flag.StringVar(&mode, "mode", "naive", "mode of operation: naive, safe, atomic, optimistic, defaults to naive")
 	flag.IntVar(&clients, "clients", 200, "number of concurrent clients, defaults to 200")
+	flag.IntVar(&rooms, "rooms", 200, "number of rooms per hotel, defaults to 200")
 	flag.Parse()
 }
 
 func main() {
 	modes := []string{"naive", "safe", "atomic", "optimistic"}
-	usage := fmt.Sprintf("usage: evento [# of clients] [%s]", strings.Join(modes, "|"))
+	usage := fmt.Sprintf("usage: evento [# of clients] [%s] [-rooms number]", strings.Join(modes, "|"))
 
 	if clients <= 0 {
-		fmt.Println("erro :invalid number of clients")
+		fmt.Println("error: invalid number of clients")
 		fmt.Println(usage)
 		return
 	}
@@ -52,7 +54,7 @@ func main() {
 	}
 
 	// Create the database and the schema
-	err = database.Setup(conn)
+	err = database.Setup(conn, rooms)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -60,6 +62,7 @@ func main() {
 	}
 
 	fmt.Println("- Database Ready (created, migrated and seeded)")
+	fmt.Printf("- Using %d rooms per hotel\n", rooms)
 	fmt.Println("> Starting inventory")
 	inventory.Print(conn)
 	fmt.Println()
@@ -100,11 +103,11 @@ func main() {
 
 	// Wait for all clients to finish
 	wg.Wait()
-	
+
 	// Calculate and display execution time
 	duration := time.Since(start)
 	fmt.Printf("\n> Execution time: %v\n", duration)
-	
+
 	fmt.Printf("\n> Final Inventory\n")
 
 	// Print the inventory

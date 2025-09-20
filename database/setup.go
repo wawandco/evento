@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func Setup(conn *pgxpool.Pool) error {
+func Setup(conn *pgxpool.Pool, rooms int) error {
 	err := create(conn.Config().ConnString())
 	if err != nil {
 		return err
@@ -18,7 +18,7 @@ func Setup(conn *pgxpool.Pool) error {
 		return err
 	}
 
-	err = Load(conn)
+	err = seed(conn, rooms)
 	if err != nil {
 		return err
 	}
