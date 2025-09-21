@@ -7,8 +7,8 @@ The objective of this POC is to validate that a concurrently consistent system i
 - Evento hosts an event with a set of rooms available at different hotels
 - Multiple clients could try to reserve rooms at the same time
 - At any given time there might be more than one instance of Evento running
-- There is only ONE instance of the database.
-- Rooms are reserved concurrently
+- There is only ONE instance of the postgres database.
+- Rooms are reserved concurrently by clients
 - Evento should NOT allow to reserve more than the rooms available
 
 ### The boxes
