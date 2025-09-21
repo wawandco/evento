@@ -71,7 +71,7 @@ The strategies available are:
 - optimistic: Optimistic locking using `updated_at` timestamp
 
 Database connection parameters can be set using `DATABASE_URL` environment variable. By default it will connect to `postgres://postgres@localhost:5432/evento`.
-### Possible improvements / TODOs
 
+### Possible improvements / TODOs
 - Locking rooms (part of the reservation)
 - Better TUI, including progress.
