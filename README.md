@@ -20,12 +20,12 @@ The server is a simple  HTTP server exposing two endpoints:
 - `POST /{event_id}/{hotel_id}/reserve/{mode}`: Reserves a number of rooms for a given event and hotel.
 
 #### The client
-The client is a function trying to reserve a number of rooms for a given event and hotel. It will try to reserve rooms until it gets a response from the server saying there are no more rooms available.
+The client is a function trying to reserve a number of rooms for a given event and hotel. It tries to reserve rooms until it gets a response from the server saying there are no more rooms available.
 
-- It calls /{event_id}/{hotel_id}/available to check how many rooms are available
-- If there are rooms available, it calls /{event_id}/{hotel_id}/reserve/{mode} to try to reserve a number of rooms (1-5)
-- It will then pause for a random amount of time (0-300ms)
-- If the reservation is successful, it will repeat the process
+- It calls `GET /{event_id}/{hotel_id}/` available to check how many rooms are available
+- If there are rooms available, it calls `POST /{event_id}/{hotel_id}/reserve/{mode}/` to try to reserve a number of rooms (1-5)
+- It then makes a random pause (`0-300ms`)
+- If the reservation is successful, it repeats the process
 - If the reservation fails because there are no more rooms available, it stops
 - If the reservation fails because of a conflict, it retries
 
