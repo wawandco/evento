@@ -24,7 +24,7 @@ The client is a function trying to reserve a number of rooms for a given event a
 
 - It calls /{event_id}/{hotel_id}/available to check how many rooms are available
 - If there are rooms available, it calls /{event_id}/{hotel_id}/reserve/{mode} to try to reserve a number of rooms (1-5)
-- It will then pause for a random amount of time (0-500ms)
+- It will then pause for a random amount of time (0-300ms)
 - If the reservation is successful, it will repeat the process
 - If the reservation fails because there are no more rooms available, it stops
 - If the reservation fails because of a conflict, it retries
