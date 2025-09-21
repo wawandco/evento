@@ -18,7 +18,7 @@ func Run(port, kind, ID, eventID string) {
 		// Make a GET request to the Availability endpoint which will return a
 		// JSON array of available hotels with available rooms.
 		// Example: [{"hotel_id":"1","available":10},{"hotel_id":"2","available":5}]
-		res, err := http.Get(fmt.Sprintf("http://localhost:%s/available?event_id=%s", port, eventID))
+		res, err := http.Get(fmt.Sprintf("http://localhost:%s/%s/available", port, eventID))
 		if err != nil {
 			continue
 		}
@@ -60,8 +60,8 @@ func Run(port, kind, ID, eventID string) {
 
 		// If there is availability reserve 1 room in the first hotel with availability.
 		url := fmt.Sprintf(
-			"http://localhost:%s/reserve/%s?event_id=%s&hotel_id=%s&rooms=%d&email=%s@client.com",
-			port, kind, eventID, availability[0].HotelID, rooms, ID,
+			"http://localhost:%s/%s/%s/reserve/%s?rooms=%d&email=%s@client.com",
+			port, eventID, availability[0].HotelID, kind, rooms, ID,
 		)
 
 		_, err = http.Post(url, "application/x-www-form-urlencoded", nil)

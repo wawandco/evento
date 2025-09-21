@@ -11,10 +11,10 @@ import (
 // Pessimistic method for reserving rooms for an event, it uses a transaction
 // and a SELECT ... FOR UPDATE to lock the rows that are being updated.
 func pessimistic(w http.ResponseWriter, r *http.Request) {
-	// parse the event_id, hotel_id, email and number of rooms from the URL query parameters
+	// parse the event_id, hotel_id, email and number of rooms from the URL path and query parameters
 	// this is done for simplicity, in a real application you would use a JSON body or form values
-	eventID := r.URL.Query().Get("event_id")
-	hotelID := r.URL.Query().Get("hotel_id")
+	eventID := r.PathValue("event_id")
+	hotelID := r.PathValue("hotel_id")
 	email := r.URL.Query().Get("email")
 
 	// parse the number of rooms to reserve and validate is a positive integer

@@ -7,7 +7,7 @@ import (
 
 // available rooms for an event
 func available(w http.ResponseWriter, r *http.Request) {
-	eventID := r.URL.Query().Get("event_id")
+	eventID := r.PathValue("event_id")
 	query := `
 	SELECT hotel_id, (contracted-(reserved+locked)) as available
 	FROM event_hotel_rooms

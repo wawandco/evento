@@ -12,9 +12,9 @@ import (
 // Optimistic method for reserving rooms for an event, it uses a transaction
 // with optimistic locking based on updated_at timestamp to prevent overbooking.
 func optimistic(w http.ResponseWriter, r *http.Request) {
-	// parse the event_id, hotel_id, email and number of rooms from the URL query parameters
-	eventID := r.URL.Query().Get("event_id")
-	hotelID := r.URL.Query().Get("hotel_id")
+	// parse the event_id, hotel_id, email and number of rooms from the URL path and query parameters
+	eventID := r.PathValue("event_id")
+	hotelID := r.PathValue("hotel_id")
 	email := r.URL.Query().Get("email")
 
 	// parse the number of rooms to reserve and validate is a positive integer

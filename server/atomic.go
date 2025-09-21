@@ -12,10 +12,10 @@ import (
 // without locking. This can lead to overbooking to demonstrate the difference
 // between thread-safe and atomic operations.
 func atomic(w http.ResponseWriter, r *http.Request) {
-	// parse the event_id, hotel_id, email and number of rooms from the URL query parameters
+	// parse the event_id, hotel_id, email and number of rooms from the URL path and query parameters
 	// this is done for simplicity, in a real application you would use a JSON body or form values
-	eventID := r.URL.Query().Get("event_id")
-	hotelID := r.URL.Query().Get("hotel_id")
+	eventID := r.PathValue("event_id")
+	hotelID := r.PathValue("hotel_id")
 	email := r.URL.Query().Get("email")
 
 	// parse the number of rooms to reserve and validate is a positive integer

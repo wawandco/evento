@@ -16,11 +16,11 @@ func New(cx *pgxpool.Pool) (*http.ServeMux, error) {
 
 	// Start the server
 	server := http.NewServeMux()
-	server.HandleFunc("GET /available", available)
-	server.HandleFunc("POST /reserve/naive", naive)
-	server.HandleFunc("POST /reserve/pessimistic", pessimistic)
-	server.HandleFunc("POST /reserve/atomic", atomic)
-	server.HandleFunc("POST /reserve/optimistic", optimistic)
+	server.HandleFunc("GET /{event_id}/available", available)
+	server.HandleFunc("POST /{event_id}/{hotel_id}/reserve/naive", naive)
+	server.HandleFunc("POST /{event_id}/{hotel_id}/reserve/pessimistic", pessimistic)
+	server.HandleFunc("POST /{event_id}/{hotel_id}/reserve/atomic", atomic)
+	server.HandleFunc("POST /{event_id}/{hotel_id}/reserve/optimistic", optimistic)
 
 	return server, nil
 }
