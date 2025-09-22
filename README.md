@@ -1,4 +1,4 @@
-Evento is a proof of concept for a reservation system that handles concurrent reservation requests consistently. It consists of HTTP endpoints and is highly concurrent, connecting to a Postgres database.
+Evento is a proof of concept (POC) for a highly concurrent room reservation system built with Go and PostgreSQL. It simulates multiple clients and servers handling reservations for events and hotels, demonstrating and comparing different strategies for maintaining consistency under concurrent access. The project includes HTTP endpoints, a simple database schema, and configurable concurrency modes to test and validate reliable reservation handling.
 
 ### Objective
 The objective of this POC is to validate that a concurrently consistent system is possible using Go and Postgres. As a side product, the repo demonstrates the means required to achieve such consistency and compare different strategies to achieve it.
